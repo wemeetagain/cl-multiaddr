@@ -1,7 +1,7 @@
 (cl:in-package #:cl-user)
 
 (defpackage #:cl-multiaddr
-  (:nickname #:multiaddr)
+  (:nicknames #:multiaddr)
   (:use #:cl)
   (:export #:protocol
 	   #:protocol-code

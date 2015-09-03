@@ -23,7 +23,7 @@
 ;;; simple-multiaddr
 
 (defclass simple-multiaddr (multiaddr)
-  ((%bytes :initarg :bytes))))
+  ((%bytes :initarg :bytes)))
 
 (defgeneric make-multiaddr (object))
 
@@ -31,14 +31,14 @@
   (make-instance 'simple-multiaddr :bytes (string-to-bytes string)))
 
 (defmethod make-multiaddr ((bytes vector))
-  (declare (type vector (vector (unsigned-bytes 8))))
+  (declare (type (vector (unsigned-bytes 8)) vector))
   (make-instance 'simple-multiaddr :bytes bytes))
 
 (defmethod multiaddr-bytes ((ma simple-multiaddr))
   (copy-seq (slot-value ma '%bytes)))
 
 (defmethod multiaddr-string ((ma simple-multiaddr))
-  (octets-to-string (multiaddr-bytes ma)))
+  (bytes-to-string (multiaddr-bytes ma)))
 
 (defmethod multiaddr-protocols ((ma simple-multiaddr))
   (loop with protocols = '()

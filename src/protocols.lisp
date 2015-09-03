@@ -13,7 +13,7 @@
 ;;; 1. avoid parsing the csv
 ;;; 2. ensuring errors in the csv don't screw up code.
 ;;; 3. changing a number has to happen in two places.
-(constant +definitions+
+(defvar +definitions+
   '((4 32 "ip4")
     (6 16 "tcp")
     (17 16 "udp")
@@ -40,17 +40,17 @@
      finally (return `(progn ,@forms)))
 
 (defun protocol-with-name (name)
-  (let ((protocol (member name *procotols*
-			  :key #'protocol-name
-			  :test #'string=)))
+  (let ((protocol (car (member name *protocols*
+			       :key #'protocol-name
+			       :test #'string=))))
     (unless protocol
       (error 'invalid-protocol :slot :name :value name))
     protocol))
 
 (defun protocol-with-code (code)
-  (let ((protocol (member code *procotols*
-			  :key #'protocol-code
-			  :test #'=)))
+  (let ((protocol (car (member code *protocols*
+			       :key #'protocol-code
+			       :test #'=))))
     (unless protocol
       (error 'invalid-protocol :slot :code :value code))
     protocol))
