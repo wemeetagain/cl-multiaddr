@@ -21,13 +21,8 @@
 
        until (zerop (length split1))
        for protocol = (protocol-with-name (car split1))
-       do (progn
-	    (print split1))
        collect (code-to-varint (protocol-code protocol)) into bytes
        do (setf split1 (cdr split1))
-       do (progn
-	    (print split1)
-	    (print "------"))
        if (zerop (length split1))
        do (error 'no-address)
        collect (address-string-to-bytes protocol (car split1)) into bytes
@@ -54,10 +49,12 @@
   (declare (type protocol protocol)
 	   (type (vector (unsigned-byte 8)) bytes))
   (cond
-    ((> (protocol-size protocol) 0) (/ (protocol-size protocol) 8))
+    ((> (protocol-size protocol) 0)
+     (round (/ (protocol-size protocol) 8)))
     ((zerop (protocol-size protocol)) 0)
-    (t (let ((code-index (multiple-value-list (varint-to-code bytes))))
-	 (+ (first code-index) (second code-index)))))) ;?
+    (t
+     (let ((code-index (multiple-value-list (varint-to-code bytes))))
+       (+ (first code-index) (second code-index)))))) ;?
 
 (defun bytes-split (bytes)
   (declare (type (vector (unsigned-byte 8)) bytes))
@@ -88,7 +85,7 @@
        (let ((port (parse-integer string)))
 	 (if (>= port 65536)
 	     (error "~D is greater than 65536" port))
-	 (subseq (octets-util:integer-to-octets port) 0 2)))
+	 (octets-util:integer-to-octets port :n-bits 16)))
       ((= code +p-ipfs+)
        (let* ((multihash (multihash:base58-to-octets string))
 	      (size (code-to-varint (length multihash))))
@@ -101,7 +98,7 @@
   (let ((code (protocol-code protocol)))
     (cond
       ((= code +p-ip4+)
-       (usocket:ip-from-octet-buffer bytes))
+       (format nil "~{~A~^.~}" (coerce bytes 'list)))
       ((= code +p-ip6+)
        (usocket:vector-to-ipv6-host bytes))
       ((or
