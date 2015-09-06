@@ -7,24 +7,28 @@
    (%vcode :accessor protocol-vcode :initarg :vcode))
   (:documentation "Protocol is a multihash protocol description structure."))
 
-#.(defconstant +length-prefixed-var-size+ -1)
+#.(progn
+    (defconstant +length-prefixed-var-size+ -1)
+    `(defconstant +length-prefixed-var-size+ ,+length-prefixed-var-size+))
 
 ;;; replicating table here to:
 ;;; 1. avoid parsing the csv
 ;;; 2. ensuring errors in the csv don't screw up code.
 ;;; 3. changing a number has to happen in two places.
-#.(defparameter *definitions*
-  `((4 32 "ip4")
-    (6 16 "tcp")
-    (17 16 "udp")
-    (33 16 "dccp")
-    (41 128 "ip6")
-    (132 16 "sctp")
-    (301 0 "udt")
-    (302 0 "utp")
-    (421 ,+length-prefixed-var-size+ "ipfs")
-    (480 0 "http")
-    (443 0 "https")))
+#.(progn
+    (defparameter *definitions*
+      `((4 32 "ip4")
+	(6 16 "tcp")
+	(17 16 "udp")
+	(33 16 "dccp")
+	(41 128 "ip6")
+	(132 16 "sctp")
+	(301 0 "udt")
+	(302 0 "utp")
+	(421 ,+length-prefixed-var-size+ "ipfs")
+	(480 0 "http")
+	(443 0 "https")))
+    `(defparameter *definitions* ',*definitions*))
 
 (defparameter *protocols*
   (loop for (code size name) in *definitions*

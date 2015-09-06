@@ -195,7 +195,7 @@
 			 return nil
 			 finally (return t))))
        ,@(loop for string in bad-cases
-	    collect `(is-error (multiaddr:protocol-with-string ,string) 'error))))
+	    collect `(is-error (multiaddr:protocols-with-string ,string) 'error))))
 
 (subtest "MULTIADDR-ENCAPSULATE and MULTIADDR-DECAPSULATE Tests"
   (let ((m1 (multiaddr:make-multiaddr "/ip4/127.0.0.1/udp/1234"))
