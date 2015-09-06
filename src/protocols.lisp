@@ -55,7 +55,7 @@
       (error 'invalid-protocol :slot :code :value code))
     protocol))
 
-(defun protocol-with-string (string)
+(defun protocols-with-string (string)
   (let* ((string (ppcre:regex-replace-all "(^/+|/+$)" string ""))
 	 (names (split-sequence:split-sequence #\/ string)))
     (unless (zerop (length names))

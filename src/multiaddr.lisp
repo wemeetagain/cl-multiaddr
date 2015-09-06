@@ -5,6 +5,9 @@
 (defclass multiaddr () ()
   (:documentation "Multiaddr is a cross-protocol, cross-platform format for representing internet addresses."))
 
+(defgeneric multiaddr-equal (m1 m2)
+  (:documentation "Compares two multiaddrs for exact equality."))
+
 (defgeneric multiaddr-bytes (multiaddr)
   (:documentation "Returns the VECTOR (UNSIGNED-BYTE 8) representation of this multiaddr."))
 
@@ -31,8 +34,20 @@
   (make-instance 'simple-multiaddr :bytes (string-to-bytes string)))
 
 (defmethod make-multiaddr ((bytes vector))
-  (declare (type (vector (unsigned-bytes 8)) vector))
+  (declare (type (vector (unsigned-byte 8)) bytes))
   (make-instance 'simple-multiaddr :bytes bytes))
+
+(defmethod multiaddr-equal ((m1 simple-multiaddr) (m2 simple-multiaddr))
+  (loop
+     with b1 = (multiaddr-bytes m1)
+     with b2 = (multiaddr-bytes m2)
+     initially (unless (= (length b1) (length b2))
+		 (return nil))
+     for i1 across b1
+     for i2 across b2
+     unless (= i1 i2)
+     return nil
+     finally (return t)))
 
 (defmethod multiaddr-bytes ((ma simple-multiaddr))
   (copy-seq (slot-value ma '%bytes)))
@@ -55,7 +70,7 @@
 	  (setf bytes (subseq bytes n))
 	  (setf size (size-for-addr protocol bytes))
 	  (setf bytes (subseq bytes size)))
-     finally (return protocols)))
+     finally (return (reverse protocols))))
 
 (defmethod multiaddr-encapsulate ((ma simple-multiaddr) (o multiaddr))
   (let ((outer-bytes (multiaddr-bytes ma))
@@ -68,14 +83,13 @@
 (defmethod multiaddr-decapsulate ((ma simple-multiaddr) (o multiaddr))
   (let ((string-1 (multiaddr-string ma))
 	(string-2 (multiaddr-string o))
-	(i 0))
-    (ppcre:do-matches (start e r t)
-      (declare (ignore e r t))
+	(i -1))
+    (ppcre:do-matches (start e string-2 string-1)
       (setf i start))
-    (if (zerop i)
+    (if (< i 0)
 	;; if multiaddr not contained, return a copy
-	(make-instance 'simple-multiaddr :bytes (copy-seq (multiaddr-bytes ma)))
-	(make-simple-multiaddr (subseq string-1 0 i)))))
+	(make-multiaddr (copy-seq (multiaddr-bytes ma)))
+	(make-multiaddr (subseq string-1 0 i)))))
 
 ;;; utility multiaddr unctions
 
@@ -88,5 +102,5 @@
   (loop for multiaddr in multiaddrs
      collect (multiaddr-bytes multiaddr) into bytes
      finally (return (make-multiaddr (apply #'concatenate
-					    '(vector (unsigned-bytes 8))
+					    '(vector (unsigned-byte 8))
 					    bytes)))))

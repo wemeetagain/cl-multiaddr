@@ -17,15 +17,17 @@
     (unless (string= (car split) "")
       (error 'invalid-multiaddr))
     (loop
-       for split1 = (cdr split) then (cdr split1)
-
+       with split1 = (cdr split)
        until (zerop (length split1))
        for protocol = (protocol-with-name (car split1))
        collect (code-to-varint (protocol-code protocol)) into bytes
        do (setf split1 (cdr split1))
+       unless (zerop (protocol-size protocol))
        if (zerop (length split1))
-       do (error 'no-address)
+       do (error "protocol requires address, none given: ~A" (protocol-name protocol))
+       end and
        collect (address-string-to-bytes protocol (car split1)) into bytes
+       and do (setf split1 (cdr split1))
        finally (return (apply #'concatenate '(vector (unsigned-byte 8)) bytes)))))
 
 (defun bytes-to-string (bytes)
@@ -59,12 +61,12 @@
 (defun bytes-split (bytes)
   (declare (type (vector (unsigned-byte 8)) bytes))
   (loop
-     for bytes = (copy-seq bytes) then (subseq bytes length)
-     until (zerop (length bytes))
-     for (code index) = (multiple-value-list (varint-to-code bytes))
+     for bytes1 = (copy-seq bytes) then (subseq bytes1 length)
+     until (zerop (length bytes1))
+     for (code index) = (multiple-value-list (varint-to-code bytes1))
      for protocol = (protocol-with-code code)
-     for length = (+ index (size-for-addr protocol (subseq bytes index)))
-     collect (subseq bytes 0 length)))
+     for length = (+ index (size-for-addr protocol (subseq bytes1 index)))
+     collect (subseq bytes1 0 length)))
 
 (defun address-string-to-bytes (protocol string)
   (declare (type protocol protocol)
@@ -87,7 +89,7 @@
 	     (error "~D is greater than 65536" port))
 	 (octets-util:integer-to-octets port :n-bits 16)))
       ((= code +p-ipfs+)
-       (let* ((multihash (multihash:base58-to-octets string))
+       (let* ((multihash (multihash:from-base58 string))
 	      (size (code-to-varint (length multihash))))
 	 (concatenate '(vector (unsigned-byte 8)) size multihash)))
       (t (error 'invalid-protocol)))))
@@ -113,5 +115,5 @@
 	 (let ((bytes (subseq bytes index)))
 	   (unless (= (length bytes) size)
 	     (error "Inconsistent Lengths"))
-	   (multihash:octets-to-base58 bytes))))
+	   (multihash:to-base58 bytes))))
       (t (error 'invalid-protocol)))))

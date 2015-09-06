@@ -15,9 +15,10 @@
 	   #:*protocols*
 	   #:protocol-with-name
 	   #:protocol-with-code
-	   #:protocol-with-string
+	   #:protocols-with-string
 	   ;;
            #:multiaddr
+	   #:multiaddr-equal
 	   #:multiaddr-bytes
 	   #:multiaddr-string
 	   #:multiaddr-protocols

@@ -16,5 +16,5 @@
 		 (:file "multiaddr"))))
   :long-description #.(uiop:read-file-string
 		       (uiop:subpathname *load-pathname* "README.md"))
-  :in-order-to ((test-op (load-op cl-multiaddr-test))))
-  
+  :in-order-to ((test-op (test-op cl-multiaddr-test))))
+ 
