@@ -25,7 +25,9 @@
 		      "/ip4/127.0.0.1/tcp/jfodsajfidosajfoidsa"
 		      "/ip4/127.0.0.1/tcp"
 		      "/ip4/127.0.0.1/ipfs"
-		      "/ip4/127.0.0.1/ipfs/tcp")
+		      "/ip4/127.0.0.1/ipfs/tcp"
+		      "/trolol/80"
+		      "bad/apple/80")
      collect `(is-error (multiaddr:make-multiaddr ,case) 'error) into forms
      finally (return
 	       `(subtest "MAKE-MULTIADDR Failure Tests"
@@ -57,9 +59,13 @@
 		      "/ip4/127.0.0.1/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC"
 		      "/ip4/127.0.0.1/ipfs/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSupNKC/tcp/1234")
      collect `(ok (multiaddr:make-multiaddr ,case)) into forms
+     collect `(ok (multiaddr:multiaddr-string (multiaddr:make-multiaddr ,case))) into forms2
      finally (return
-	       `(subtest "MAKE-MULTIADDR Success Tests"
-		  ,@forms)))
+	       `(progn
+		  (subtest "MAKE-MULTIADDR Success Tests"
+		    ,@forms)
+		  (subtest "MULTIADDR-STRING Success Tests"
+		    ,@forms2))))
 
 (subtest "MULTIADDR-EQUAL Tests"
 	 (let ((m1 (multiaddr:make-multiaddr "/ip4/127.0.0.1/udp/1234"))
