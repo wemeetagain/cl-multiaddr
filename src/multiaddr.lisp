@@ -21,7 +21,7 @@
   (:documentation "Wraps INNER with OUTER, returning a new joined multiaddr."))
 
 (defgeneric multiaddr-decapsulate (multiaddr pattern)
-  (:documentation "Removes up to the first instance of PATTERN in MULTIADDR, returning a new multiaddr."))
+  (:documentation "Removes up to the first instance of PATTERN in MULTIADDR, returning a new multiaddr. If no match is found, a full copy is returned."))
 
 ;;; simple-multiaddr
 
@@ -91,14 +91,42 @@
 	(make-multiaddr (copy-seq (multiaddr-bytes ma)))
 	(make-multiaddr (subseq string-1 0 i)))))
 
-;;; utility multiaddr unctions
+;;; string convenience methods
+
+(defmethod multiaddr-equal ((m1 string) m2)
+  (multiaddr-equal (make-multiaddr m1) m2))
+(defmethod multiaddr-equal (m1 (m2 string))
+  (multiaddr-equal m1 (make-multiaddr m2)))
+
+(defmethod multiaddr-bytes ((multiaddr string))
+  (multiaddr-bytes (make-multiaddr multiaddr)))
+
+(defmethod multiaddr-string ((multiaddr string))
+  (multiaddr-string (make-multiaddr multiaddr)))
+
+(defmethod multiaddr-protocols ((multiaddr string))
+  (multiaddr-protocols (make-multiaddr multiaddr)))
+
+(defmethod multiaddr-encapsulate ((outer string) inner)
+  (multiaddr-encapsulate (make-multiaddr outer) inner))
+(defmethod multiaddr-encapsulate (outer (inner string))
+  (multiaddr-encapsulate outer (make-multiaddr inner)))
+
+(defmethod multiaddr-decapsulate ((multiaddr string) pattern)
+  (multiaddr-decapsulate (make-multiaddr multiaddr) pattern))
+(defmethod multiaddr-decapsulate (multiaddr (pattern string))
+  (multiaddr-decapsulate multiaddr (make-multiaddr pattern)))
+
+;;; utility multiaddr functions
 
 (defun multiaddr-split (multiaddr)
+  "Return a list of component multiaddrs."
   (declare (type multiaddr multiaddr))
   (loop for bytes in (bytes-split (multiaddr-bytes multiaddr))
      collect (make-multiaddr bytes)))
 
 (defun multiaddr-join (multiaddrs)
+  "Join a list of multiaddrs into a single multiaddr."
   (loop for multiaddr in multiaddrs
      collect (multiaddr-bytes multiaddr) into bytes
      finally (return (make-multiaddr (apply #'concatenate
