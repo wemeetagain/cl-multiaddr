@@ -29,7 +29,7 @@ script:
                    (uiop:quit -1)))'
        -e '(ql:quickload :cl-multiaddr)'
        -e '(or (coveralls:with-coveralls (:exclude (list "t"))
-                 (asdf:test-system :cl-multiaddr))
+                 (prove:run :cl-multiaddr-test))
                 (uiop:quit -1))'
 
 notifications:
